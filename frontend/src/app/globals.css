@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-base: #F8FAFC;
+    --bg-surface: #FFFFFF;
+    --bg-elevated: #F1F5F9;
+    --border: #E2E8F0;
+    --border-highlight: #CBD5E1;
+    --accent-primary: #7C5CFC;
+    --accent-glow: rgba(124, 92, 252, 0.08);
+    --accent-green: #10B981;
+    --accent-amber: #F59E0B;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-tertiary: #94A3B8;
+  }
+
+  .dark {
+    --bg-base: #0A0A0F;
+    --bg-surface: #111118;
+    --bg-elevated: #16161F;
+    --border: #1E1E2E;
+    --border-highlight: #2A2A40;
+    --accent-primary: #7C5CFC;
+    --accent-glow: rgba(124, 92, 252, 0.15);
+    --accent-green: #22C55E;
+    --accent-amber: #F59E0B;
+    --text-primary: #F0F0FF;
+    --text-secondary: #8B8BA8;
+    --text-tertiary: #4A4A6A;
+  }
+
+  body {
+    @apply bg-bg-base text-text-primary antialiased transition-colors duration-200;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--accent-primary) !important;
+    outline-offset: 2px !important;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom premium scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-elevated);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-highlight);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
