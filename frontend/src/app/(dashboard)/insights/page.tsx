@@ -65,7 +65,7 @@ export default function InsightsPage() {
 
         // Check for Gemini API key
         const key = typeof window !== 'undefined' ? localStorage.getItem('user_gemini_api_key') || '' : '';
-        setHasGeminiKey(!!key && key.startsWith('AIzaSy'));
+        setHasGeminiKey(!!key && (key.startsWith('AIzaSy') || key.startsWith('AQ.')));
 
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;

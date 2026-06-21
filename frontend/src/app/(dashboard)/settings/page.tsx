@@ -73,8 +73,8 @@ export default function SettingsPage() {
       setKeyError('A Gemini API Key is required. Please enter a valid key.');
       return;
     }
-    if (!trimmed.startsWith('AIzaSy') || trimmed.length < 30) {
-      setKeyError('Invalid key format. A valid Gemini key starts with "AIzaSy" and is at least 30 characters.');
+    if ((!trimmed.startsWith('AIzaSy') && !trimmed.startsWith('AQ.')) || trimmed.length < 30) {
+      setKeyError('Invalid key format. A valid Gemini key starts with "AIzaSy" or "AQ." and is at least 30 characters.');
       return;
     }
     if (typeof window !== 'undefined') {
@@ -249,7 +249,7 @@ export default function SettingsPage() {
               type="password"
               value={userGeminiKey}
               onChange={(e) => { setUserGeminiKey(e.target.value); setKeyError(''); }}
-              placeholder="Paste your AIzaSy... key here"
+              placeholder="Paste your Gemini API key here"
               className={`w-full px-3 py-2 bg-bg-elevated border rounded-[6px] focus:outline-none transition-colors text-xs text-text-primary font-mono ${keyError ? 'border-rose-500/50 focus:border-rose-500' : 'border-border-base focus:border-border-highlight'}`}
             />
             {keyError && (

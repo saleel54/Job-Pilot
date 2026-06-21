@@ -278,7 +278,7 @@ export default function OnboardingPage() {
                   <li>Go to <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" className="text-accent-primary font-bold hover:underline">Google AI Studio</a>.</li>
                   <li>Sign in with your Google account.</li>
                   <li>Click the blue **&quot;Get API Key&quot;** button in the top left.</li>
-                  <li>Click **&quot;Create API Key&quot;** and copy the generated key (starts with <code className="font-mono bg-bg-surface px-1 py-0.5 rounded border border-border-base">AIzaSy</code>).</li>
+                  <li>Click **&quot;Create API Key&quot;** and copy the generated key (starts with <code className="font-mono bg-bg-surface px-1 py-0.5 rounded border border-border-base">AIzaSy</code> or <code className="font-mono bg-bg-surface px-1 py-0.5 rounded border border-border-base">AQ.</code>).</li>
                 </ol>
               </div>
 
@@ -290,7 +290,7 @@ export default function OnboardingPage() {
                   type="password"
                   value={userGeminiKey}
                   onChange={(e) => setUserGeminiKey(e.target.value)}
-                  placeholder="Paste your AIzaSy... key here"
+                  placeholder="Paste your Gemini API key here"
                   className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] focus:outline-none focus:border-border-highlight transition-colors text-xs text-text-primary font-mono"
                 />
               </div>
@@ -305,8 +305,8 @@ export default function OnboardingPage() {
                     setErrorMsg('A Gemini API Key is required to use JobPilot AI. Please enter your key to continue.');
                     return;
                   }
-                  if (!trimmed.startsWith('AIzaSy') || trimmed.length < 30) {
-                    setErrorMsg('That doesn\'t look like a valid Gemini API Key. It should start with "AIzaSy" and be at least 30 characters. Please check and try again.');
+                  if ((!trimmed.startsWith('AIzaSy') && !trimmed.startsWith('AQ.')) || trimmed.length < 30) {
+                    setErrorMsg('That doesn\'t look like a valid Gemini API Key. Keys start with "AIzaSy" or "AQ." and are at least 30 characters. Please check and try again.');
                     return;
                   }
                   setErrorMsg('');
