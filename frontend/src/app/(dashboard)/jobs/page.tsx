@@ -86,9 +86,13 @@ export default function JobsPage() {
   const fetchJobs = async (q = '', loc = '') => {
     setLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { data: dbJobsList } = await supabase
         .from('jobs')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.id);
       
       const savedList = dbJobsList || [];
       setDbJobs(savedList);
@@ -126,9 +130,13 @@ export default function JobsPage() {
 
   useEffect(() => {
     async function loadUserPrefs() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { data: profile } = await supabase
         .from('users_profile')
         .select('preferences')
+        .eq('id', user.id)
         .maybeSingle();
 
       const prefRoles = profile?.preferences?.target_roles || [];
@@ -276,7 +284,7 @@ export default function JobsPage() {
   };
 
   const formatSalary = (min?: number | null, max?: number | null) => {
-    if (!min && !max) return 'Competitive salary';
+    if (!min && !max) return 'Competitive LPA';
     const minL = min ? `${(min / 100000).toFixed(0)}` : '';
     const maxL = max ? `${(max / 100000).toFixed(0)}` : '';
     if (minL && maxL) return `₹${minL}–${maxL} LPA`;
@@ -287,11 +295,11 @@ export default function JobsPage() {
   const getCompanyAvatarStyle = (companyName: string) => {
     const firstChar = (companyName || 'C').charAt(0).toUpperCase();
     const colors = [
-      { bg: 'bg-accent-primary/25', text: 'text-accent-primary' },
-      { bg: 'bg-accent-green/25', text: 'text-accent-green' },
-      { bg: 'bg-accent-amber/25', text: 'text-accent-amber' },
-      { bg: 'bg-blue-500/25', text: 'text-blue-400' },
-      { bg: 'bg-rose-500/25', text: 'text-rose-400' }
+      { bg: 'bg-accent-primary/20 text-accent-primary border-accent-primary/20', text: 'text-accent-primary' },
+      { bg: 'bg-accent-green/20 text-accent-green border-accent-green/20', text: 'text-accent-green' },
+      { bg: 'bg-accent-amber/20 text-accent-amber border-accent-amber/20', text: 'text-accent-amber' },
+      { bg: 'bg-[#7CFFB2]/20 text-[#7CFFB2] border-[#7CFFB2]/20', text: 'text-[#7CFFB2]' },
+      { bg: 'bg-rose-500/20 text-rose-400 border-rose-500/20', text: 'text-rose-400' }
     ];
     const index = firstChar.charCodeAt(0) % colors.length;
     return colors[index];
@@ -307,9 +315,9 @@ export default function JobsPage() {
   return (
     <div className="space-y-8">
       {/* Header and Summary */}
-      <div className="border-b border-border-base pb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary">Discover</h1>
-        <p className="text-text-secondary text-[13px] mt-1 font-medium">AI-parsed job feed · India</p>
+      <div className="border-b border-border dark:border-white/5 pb-6">
+        <h1 className="text-3xl font-extrabold tracking-tight text-text-primary font-heading">Discover</h1>
+        <p className="text-text-secondary text-xs mt-1 font-medium font-sans">AI-parsed job feed · India</p>
       </div>
 
       {/* Grid split: Left is Job search list, Right is Analyze JD tool */}
@@ -319,18 +327,18 @@ export default function JobsPage() {
         <div className="lg:col-span-2 space-y-6">
           
           {/* AI-first Single Command Search */}
-          <div className="bg-bg-surface border border-border-base rounded p-5 space-y-4">
-            <form onSubmit={handleSearchSubmit} className="relative flex items-center h-10 w-full bg-bg-elevated border border-border-base rounded-lg px-3 focus-within:border-border-highlight">
+          <div className="glass-card p-5 space-y-4 rounded-[24px]">
+            <form onSubmit={handleSearchSubmit} className="relative flex items-center h-11 w-full bg-bg-elevated/40 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl px-3 focus-within:border-border-highlight dark:focus-within:border-white/20 transition-all">
               <input
                 type="text"
                 placeholder="Find remote React jobs under 2 years experience in India..."
                 value={aiSearchInput}
                 onChange={(e) => setAiSearchInput(e.target.value)}
-                className="w-full bg-transparent border-0 text-text-primary text-[13px] placeholder-text-tertiary focus:outline-none focus:ring-0 pr-8"
+                className="w-full bg-transparent border-0 text-text-primary text-xs placeholder-text-tertiary focus:outline-none focus:ring-0 pr-8"
               />
               <button
                 type="submit"
-                className="absolute right-3 text-accent-primary hover:text-accent-primary/80 transition-colors text-lg"
+                className="absolute right-3 w-7 h-7 bg-accent-primary text-white rounded-lg flex items-center justify-center font-bold text-xs hover:bg-accent-primary/95 transition-all"
               >
                 →
               </button>
@@ -340,8 +348,8 @@ export default function JobsPage() {
             {aiSearchInput && (
               <div className="flex flex-wrap gap-2 text-[10px] items-center pt-2">
                 <span className="text-text-secondary font-bold uppercase tracking-wider">AI Parser:</span>
-                <span className="px-2 py-0.5 bg-bg-elevated border border-border-base text-text-secondary rounded font-mono">KEYWORD: {searchQuery || 'None'}</span>
-                <span className="px-2 py-0.5 bg-bg-elevated border border-border-base text-text-secondary rounded font-mono">LOCATION: {locationQuery || 'Anywhere'}</span>
+                <span className="px-2.5 py-0.5 bg-bg-elevated/60 dark:bg-white/5 border border-border dark:border-white/5 text-text-secondary rounded-lg font-mono">KEYWORD: {searchQuery || 'None'}</span>
+                <span className="px-2.5 py-0.5 bg-bg-elevated/60 dark:bg-white/5 border border-border dark:border-white/5 text-text-secondary rounded-lg font-mono">LOCATION: {locationQuery || 'Anywhere'}</span>
 
                 <button
                   type="button"
@@ -367,7 +375,7 @@ export default function JobsPage() {
                       key={phrase}
                       type="button"
                       onClick={() => handleSuggestionClick(phrase)}
-                      className="text-xs bg-bg-elevated hover:bg-bg-elevated/80 border border-border-base hover:border-border-highlight text-text-secondary hover:text-text-primary px-3 py-1.5 rounded transition-all font-medium"
+                      className="text-xs bg-bg-elevated dark:bg-white/5 hover:bg-bg-elevated/80 dark:hover:bg-white/10 border border-border dark:border-white/5 hover:border-border-highlight dark:hover:border-white/10 text-text-secondary hover:text-text-primary px-3.5 py-2 rounded-xl transition-all font-semibold"
                     >
                       {phrase}
                     </button>
@@ -378,14 +386,14 @@ export default function JobsPage() {
 
             {/* Advanced Filters */}
             {(showAdvanced || !aiSearchInput) && (
-              <div className="pt-4 border-t border-border-base grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="pt-4 border-t border-border dark:border-white/5 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">Keywords</label>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight"
+                    className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
                   />
                 </div>
                 <div>
@@ -394,7 +402,7 @@ export default function JobsPage() {
                     type="text"
                     value={locationQuery}
                     onChange={(e) => setLocationQuery(e.target.value)}
-                    className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight"
+                    className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
                   />
                 </div>
                 <div>
@@ -402,7 +410,7 @@ export default function JobsPage() {
                   <select
                     value={scoreThreshold}
                     onChange={(e) => setScoreThreshold(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight"
+                    className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
                   >
                     <option value="0">All Scores</option>
                     <option value="50">50% + Fit</option>
@@ -414,117 +422,111 @@ export default function JobsPage() {
             )}
           </div>
 
-          {/* Job Feed Cards */}
+          {/* Job Feed Cards - Grid Netflix-style layout */}
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="bg-bg-surface border border-border-base rounded p-6 space-y-3 animate-pulse h-[160px]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="glass-card p-6 rounded-[24px] space-y-4 animate-pulse h-[200px]">
                   <div className="flex justify-between items-start">
                     <div className="space-y-2 w-2/3">
-                      <div className="h-4 bg-bg-elevated rounded w-full"></div>
-                      <div className="h-3 bg-bg-elevated rounded w-1/2"></div>
+                      <div className="h-4 bg-bg-elevated dark:bg-white/5 rounded w-full"></div>
+                      <div className="h-3 bg-bg-elevated dark:bg-white/5 rounded w-1/2"></div>
                     </div>
-                    <div className="h-10 w-10 bg-bg-elevated rounded"></div>
+                    <div className="h-10 w-10 bg-bg-elevated dark:bg-white/5 rounded-xl"></div>
                   </div>
-                  <div className="h-3 bg-bg-elevated rounded w-full"></div>
+                  <div className="h-3 bg-bg-elevated dark:bg-white/5 rounded w-full my-4"></div>
                 </div>
               ))}
             </div>
           ) : filteredJobs.length === 0 ? (
-            <div className="bg-bg-surface border border-border-base rounded p-12 text-center">
-              <h3 className="font-semibold text-text-primary text-[14px]">No jobs found matching parameters</h3>
+            <div className="glass-card p-12 text-center rounded-[24px]">
+              <h3 className="font-extrabold text-text-primary text-[14px]">No jobs found matching parameters</h3>
               <p className="text-text-secondary text-xs mt-1">Refine your AI Search text or clear min score thresholds.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredJobs.map((job) => {
                 const hasScore = job.match_score !== null && job.match_score !== undefined;
                 const score = job.match_score || 0;
                 
-                let borderLeftStyle = 'border-l-2 border-l-border-base';
-                if (hasScore) {
-                  if (score >= 50) borderLeftStyle = 'border-l-2 border-l-accent-green';
-                  else if (score >= 20) borderLeftStyle = 'border-l-2 border-l-accent-amber';
-                }
-
                 return (
                   <div
                     key={job.id}
                     onClick={() => navigateToJob(job)}
-                    className={`bg-bg-surface border border-border-base hover:border-border-highlight rounded p-6 transition-all cursor-pointer relative flex flex-col justify-between min-h-[160px] group ${borderLeftStyle}`}
+                    className="glass-card glow-card glass-shine card-hover-rise p-6 rounded-[24px] flex flex-col justify-between min-h-[220px]"
                   >
-                    <div className="flex justify-between items-start gap-4 mb-3">
-                      {/* Logo and Job Info */}
-                      <div className="flex gap-4 truncate">
-                        <div className={`w-9 h-9 rounded-[4px] font-mono font-bold flex items-center justify-center text-sm shrink-0 ${getCompanyAvatarStyle(job.company).bg} ${getCompanyAvatarStyle(job.company).text}`}>
-                          {(job.company || 'CO').charAt(0).toUpperCase()}
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start gap-4">
+                        {/* Logo and Job Info */}
+                        <div className="flex gap-3.5 truncate">
+                          <div className={`w-10 h-10 rounded-xl font-mono font-bold flex items-center justify-center text-xs shrink-0 border ${getCompanyAvatarStyle(job.company).bg}`}>
+                            {(job.company || 'CO').charAt(0).toUpperCase()}
+                          </div>
+                          <div className="truncate">
+                            <h3 className="font-bold text-text-primary text-[14px] leading-tight truncate">
+                              {job.title}
+                            </h3>
+                            <p className="text-xs font-semibold text-text-secondary mt-0.5 truncate">{job.company}</p>
+                          </div>
                         </div>
-                        <div className="truncate">
-                          <h3 className="font-semibold text-text-primary group-hover:text-accent-primary transition-colors text-[15px] leading-tight truncate">
-                            {job.title}
-                          </h3>
-                          <p className="text-xs font-semibold text-text-secondary mt-1 truncate">{job.company}</p>
-                        </div>
-                      </div>
-
-                      {/* Right Indicator (Match Score or Action Badge) */}
-                      <div className="flex items-center gap-3 shrink-0">
-                        {hasScore ? (
-                          <span className={`font-mono text-sm font-bold ${score >= 85 ? 'text-accent-green' : score >= 70 ? 'text-accent-amber' : 'text-text-secondary'}`}>
-                            {score}%
-                          </span>
-                        ) : (
-                          <span className="text-[10px] uppercase font-bold text-accent-primary bg-accent-glow px-2.5 py-1 rounded-[4px] transition-all">
-                            Analyze Fit
-                          </span>
-                        )}
 
                         {/* Bookmark Button */}
                         <button
                           onClick={(e) => toggleSaveJob(job, e)}
-                          className={`p-1.5 rounded-[4px] border transition-colors ${
+                          className={`p-1.5 rounded-lg border transition-all shrink-0 ${
                             job.is_saved 
                               ? 'bg-accent-glow border-accent-primary/20 text-accent-primary' 
-                              : 'bg-bg-elevated border-border-base text-text-secondary hover:text-text-primary'
+                              : 'bg-bg-elevated/50 dark:bg-white/5 border-border dark:border-white/5 text-text-secondary hover:text-text-primary'
                           }`}
                         >
-                          <span className="text-xs font-bold font-mono">{job.is_saved ? 'SAVED' : 'SAVE'}</span>
+                          <span className="text-[10px] font-bold font-mono px-1">{job.is_saved ? 'SAVED' : 'SAVE'}</span>
                         </button>
                       </div>
+
+                      {/* Job Snippet */}
+                      <p className="text-text-secondary text-xs line-clamp-2 leading-relaxed">
+                        {job.description}
+                      </p>
+
+                      {/* Matched vs Missing skills visualization */}
+                      {hasScore && job.match_data && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-2">
+                          {Array.isArray(job.match_data.matched_keywords) && job.match_data.matched_keywords.slice(0, 3).map((k: string) => (
+                            <span key={k} className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-accent-green text-[9px] font-bold font-mono">
+                              {k}
+                            </span>
+                          ))}
+                          {Array.isArray(job.match_data.missing_keywords) && job.match_data.missing_keywords.slice(0, 2).map((k: string) => (
+                            <span key={k} className="px-2 py-0.5 rounded bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 text-text-secondary text-[9px] font-bold font-mono">
+                              {k}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Job Snippet */}
-                    <p className="text-text-secondary text-xs line-clamp-2 mb-4 leading-relaxed">
-                      {job.description}
-                    </p>
-
-                    {/* Matched vs Missing skills visualization */}
-                    {hasScore && job.match_data && (
-                      <div className="mb-4 flex flex-wrap items-center gap-1.5 pt-3 border-t border-border-base">
-                        {Array.isArray(job.match_data.matched_keywords) && job.match_data.matched_keywords.slice(0, 4).map((k: string) => (
-                          <span key={k} className="text-[10px] text-text-secondary font-mono">[{k}]</span>
-                        ))}
-                        {Array.isArray(job.match_data.missing_keywords) && job.match_data.missing_keywords.slice(0, 3).map((k: string) => (
-                          <span key={k} className="text-[10px] text-text-tertiary font-mono">[{k}]</span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Salary, Location, Date */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-text-secondary font-semibold uppercase pt-3 border-t border-border-base">
-                      <div className="flex items-center gap-4">
-                        <span>{job.location}</span>
-                        <span className="text-text-primary font-bold font-mono">
+                    {/* Bottom Metadata & Analyze Button */}
+                    <div className="flex items-center justify-between gap-2 text-[10px] text-text-secondary font-semibold uppercase pt-4 border-t border-border dark:border-white/5 mt-4">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="truncate max-w-[100px]">{job.location}</span>
+                        <span className="text-text-primary font-bold font-mono text-[10px]">
                           {formatSalary(job.salary_min, job.salary_max)}
                         </span>
                       </div>
-                      <span className="font-mono text-text-tertiary">
-                        {new Date(job.created).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric'
-                        })}
-                      </span>
+
+                      {/* Score Pill / Action Button */}
+                      {hasScore ? (
+                        <div className="flex items-center gap-2">
+                          <span className={`font-mono text-xs font-bold bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 px-2.5 py-1 rounded-lg ${score >= 85 ? 'text-accent-green' : score >= 70 ? 'text-accent-amber' : 'text-text-secondary'}`}>
+                            {score}% Match
+                          </span>
+                          <span className="text-[10px] font-bold text-accent-primary hover:text-text-primary dark:hover:text-white transition-colors">Analyze →</span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] uppercase font-bold text-accent-primary bg-accent-glow hover:bg-accent-primary hover:text-white border border-accent-primary/20 px-3 py-1.5 rounded-lg btn-magnetic transition-colors">
+                          Analyze →
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -534,13 +536,13 @@ export default function JobsPage() {
         </div>
 
         {/* RIGHT SIDE: PASTE JD / ADD JOB (1/3 width) */}
-        <div className="bg-bg-surface border border-border-base rounded p-6 h-fit space-y-6">
-          <h2 className="font-semibold text-text-secondary text-[11px] uppercase tracking-[0.08em] border-b border-border-base pb-3">
+        <div className="glass-card p-6 h-fit space-y-6 rounded-[24px]">
+          <h2 className="font-extrabold text-text-secondary text-[10px] uppercase tracking-[0.08em] border-b border-border dark:border-white/5 pb-3">
             Analyze JD
           </h2>
 
           {manualError && (
-            <div className="p-3 text-xs bg-accent-amber/10 text-accent-amber border border-accent-amber/20 rounded-[4px]">
+            <div className="p-3 text-xs bg-accent-amber/10 text-accent-amber border border-accent-amber/20 rounded-xl">
               {manualError}
             </div>
           )}
@@ -556,7 +558,7 @@ export default function JobsPage() {
                 placeholder="e.g. Frontend Engineer"
                 value={manualTitle}
                 onChange={(e) => setManualTitle(e.target.value)}
-                className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight font-medium"
+                className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
               />
             </div>
 
@@ -570,7 +572,7 @@ export default function JobsPage() {
                 placeholder="e.g. Razorpay"
                 value={manualCompany}
                 onChange={(e) => setManualCompany(e.target.value)}
-                className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight font-medium"
+                className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
               />
             </div>
 
@@ -583,7 +585,7 @@ export default function JobsPage() {
                 placeholder="e.g. Bangalore, KA (or Remote)"
                 value={manualLocation}
                 onChange={(e) => setManualLocation(e.target.value)}
-                className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight font-medium"
+                className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
               />
             </div>
 
@@ -596,7 +598,7 @@ export default function JobsPage() {
                 placeholder="e.g. https://linkedin.com/jobs/..."
                 value={manualUrl}
                 onChange={(e) => setManualUrl(e.target.value)}
-                className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight font-medium"
+                className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
               />
             </div>
 
@@ -610,14 +612,14 @@ export default function JobsPage() {
                 rows={6}
                 value={manualDescription}
                 onChange={(e) => setManualDescription(e.target.value)}
-                className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight font-medium leading-relaxed font-sans"
+                className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-sans leading-relaxed font-medium"
               />
             </div>
 
             <button
               type="submit"
               disabled={addingManual}
-              className="w-full h-9 bg-accent-primary text-text-primary rounded-[6px] text-sm font-semibold hover:bg-accent-primary/90 transition-all flex items-center justify-center gap-2"
+              className="w-full h-10 bg-accent-primary hover:bg-accent-primary/90 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 btn-magnetic shadow-lg shadow-accent-primary/25"
             >
               {addingManual ? 'Analyzing...' : 'Run Analysis →'}
             </button>

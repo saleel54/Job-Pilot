@@ -7,7 +7,13 @@ import {
   Plus, 
   RefreshCw, 
   Check, 
-  Save 
+  Save,
+  Dna,
+  User,
+  Brain,
+  History,
+  GraduationCap,
+  Sparkles
 } from 'lucide-react';
 
 interface Experience {
@@ -47,13 +53,63 @@ interface Profile {
 }
 
 const SECTIONS = [
-  { id: 'personal', name: 'Personal Details' },
-  { id: 'skills', name: 'Skills Vault' },
-  { id: 'experience', name: 'Work Experience' },
-  { id: 'projects', name: 'Projects' },
-  { id: 'education', name: 'Education' },
-  { id: 'preferences', name: 'Preferences' },
+  { id: 'dna', name: 'AI Resume DNA', emoji: '🧬' },
+  { id: 'personal', name: 'Personal Details', emoji: '👤' },
+  { id: 'skills', name: 'Skills Vault', emoji: '🧠' },
+  { id: 'experience', name: 'Work Experience', emoji: '💼' },
+  { id: 'projects', name: 'Projects', emoji: '🚀' },
+  { id: 'education', name: 'Education', emoji: '🎓' },
+  { id: 'preferences', name: 'Preferences', emoji: '⚙️' },
 ] as const;
+
+type SectionType = typeof SECTIONS[number]['id'];
+
+interface DnaRingProps {
+  label: string;
+  value: number;
+  color: string;
+  icon: React.ComponentType<any>;
+}
+
+function DnaRing({ label, value, color, icon: Icon }: DnaRingProps) {
+  const radius = 34;
+  const strokeDash = 2 * Math.PI * radius; // ~213.6
+  const ringColor = value < 50 ? '#FF6B6B' : value < 80 ? '#FFD93D' : '#00C16A';
+  
+  return (
+    <div className="flex flex-col items-center space-y-3 p-5 bg-bg-surface/40 dark:bg-white/[0.02] border border-border dark:border-white/5 rounded-3xl hover:border-border-highlight dark:hover:border-white/12 transition-all duration-300 relative group glow-card">
+      <div className="relative w-24 h-24 flex items-center justify-center">
+        <svg className="w-full h-full transform -rotate-90">
+          <circle 
+            cx="48" 
+            cy="48" 
+            r={radius} 
+            strokeWidth="5" 
+            fill="transparent" 
+            className="stroke-black/[0.04] dark:stroke-white/[0.03]"
+          />
+          <circle 
+            cx="48" 
+            cy="48" 
+            r={radius} 
+            stroke={ringColor} 
+            strokeWidth="5" 
+            fill="transparent" 
+            strokeDasharray={strokeDash} 
+            strokeDashoffset={strokeDash - (strokeDash * value) / 100} 
+            strokeLinecap="round"
+            className="transition-all duration-1000 ease-out" 
+          />
+        </svg>
+        <div className="absolute flex flex-col items-center justify-center">
+          <Icon className="w-4 h-4 text-text-secondary/50 group-hover:text-text-primary transition-colors" />
+          <span className="text-lg font-extrabold text-text-primary font-mono mt-0.5">{value}%</span>
+        </div>
+      </div>
+      <span className="text-[10px] uppercase font-bold text-text-secondary tracking-widest text-center">{label}</span>
+    </div>
+  );
+}
 
 export default function ResumeVaultPage() {
   const supabase = createClient();
@@ -62,7 +118,7 @@ export default function ResumeVaultPage() {
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   
-  const [activeSec, setActiveSec] = useState<'personal' | 'skills' | 'experience' | 'projects' | 'education' | 'preferences'>('personal');
+  const [activeSec, setActiveSec] = useState<SectionType>('dna');
 
   // Multi-input temporary states
   const [newRole, setNewRole] = useState('');
@@ -72,9 +128,13 @@ export default function ResumeVaultPage() {
     async function loadProfile() {
       try {
         setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
         const { data } = await supabase
           .from('users_profile')
           .select('*')
+          .eq('id', user.id)
           .maybeSingle();
 
         if (data) {
@@ -211,53 +271,147 @@ export default function ResumeVaultPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-base pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border dark:border-white/5 pb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">Resume Vault</h1>
-          <p className="text-text-secondary text-[13px] mt-1 font-medium font-sans">Manage your parsed core profile. This is the single source of truth for the AI matching engine.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-text-primary font-heading">Resume Vault</h1>
+          <p className="text-text-secondary text-xs mt-1 font-medium font-sans">Manage your parsed core profile. This is the single source of truth for the AI matching engine.</p>
         </div>
 
-        <button
-          onClick={handleSaveProfile}
-          disabled={saving}
-          className="inline-flex items-center justify-center gap-1.5 h-9 px-4 bg-accent-primary hover:bg-accent-primary/95 text-text-primary rounded-[6px] text-xs font-semibold transition-all disabled:opacity-50"
-        >
-          {saving ? (
-            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-          ) : savedSuccess ? (
-            <Check className="w-3.5 h-3.5" />
-          ) : (
-            <Save className="w-3.5 h-3.5" />
-          )}
-          {saving ? 'Saving...' : savedSuccess ? 'Saved!' : 'Save Changes'}
-        </button>
+        {activeSec !== 'dna' && (
+          <button
+            onClick={handleSaveProfile}
+            disabled={saving}
+            className="inline-flex items-center justify-center gap-1.5 h-10 px-5 bg-accent-primary hover:bg-accent-primary/95 text-white rounded-xl text-xs font-semibold shadow-lg shadow-accent-primary/20 transition-all disabled:opacity-50 btn-magnetic"
+          >
+            {saving ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : savedSuccess ? (
+              <Check className="w-3.5 h-3.5" />
+            ) : (
+              <Save className="w-3.5 h-3.5" />
+            )}
+            {saving ? 'Saving...' : savedSuccess ? 'Saved!' : 'Save Changes'}
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* LEFT COLUMN: NAVIGATION LIST */}
-        <div className="bg-bg-surface border border-border-base rounded p-4 h-fit space-y-1">
+        <div className="glass-card p-4 h-fit space-y-1.5 rounded-[24px]">
           {SECTIONS.map((sec) => (
             <button
               key={sec.id}
               onClick={() => setActiveSec(sec.id)}
-              className={`w-full flex items-center h-9 px-3 text-left rounded text-xs font-semibold uppercase tracking-wider transition-all ${
+              className={`w-full flex items-center h-10 px-3.5 text-left rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 activeSec === sec.id 
-                  ? 'bg-accent-glow text-accent-primary border-l-2 border-accent-primary pl-2.5' 
-                  : 'text-text-secondary hover:bg-bg-elevated hover:text-text-primary'
+                  ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/20 scale-[1.01]' 
+                  : 'text-text-secondary hover:bg-white/5 hover:text-text-primary hover:translate-x-1'
               }`}
             >
-              {sec.name}
+              <span className="mr-2.5 text-sm">{sec.emoji}</span>
+              <span>{sec.name}</span>
             </button>
           ))}
         </div>
 
         {/* RIGHT COLUMN: EDITOR PANEL (3/4 width) */}
-        <div className="md:col-span-3 bg-bg-surface border border-border-base rounded p-6">
+        <div className="md:col-span-3 glass-card p-6 rounded-[24px]">
           
-          {/* SECTION 1: PERSONAL DETAILS */}
+          {/* SECTION: AI RESUME DNA */}
+          {activeSec === 'dna' && (
+            <div className="space-y-8">
+              <div>
+                <h3 className="font-extrabold text-text-secondary text-[10px] uppercase tracking-[0.08em] border-b border-border dark:border-b-white/5 pb-2 mb-6">AI Profile DNA</h3>
+                
+                {/* 4 Rings Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+                  <DnaRing label="Technical Skills" value={85} color="#7C5CFF" icon={Brain} />
+                  <DnaRing label="Communication" value={70} color="#00D4FF" icon={User} />
+                  <DnaRing label="Leadership" value={90} color="#F59E0B" icon={Sparkles} />
+                  <DnaRing label="ATS Readiness" value={95} color="#00FFAA" icon={Dna} />
+                </div>
+              </div>
+ 
+              {/* Resume Timeline */}
+              <div className="space-y-6 pt-4">
+                <div className="flex justify-between items-center border-b border-border dark:border-b-white/5 pb-2">
+                  <h4 className="font-extrabold text-text-secondary text-[10px] uppercase tracking-[0.08em]">Resume Timeline</h4>
+                  <span className="text-[10px] font-bold text-accent-primary font-mono uppercase">Career Path</span>
+                </div>
+ 
+                <div className="relative border-l border-border dark:border-l-white/5 ml-4 pl-6 space-y-8 py-2">
+                  {/* 2026 */}
+                  <div className="relative group">
+                    <div className="absolute -left-[30px] top-1.5 w-4.5 h-4.5 rounded-full bg-accent-green border-4 border-bg-base shadow-lg shadow-accent-green/50 animate-pulse transition-transform group-hover:scale-120" />
+                    <div>
+                      <span className="text-[10px] font-bold text-accent-green font-mono">2026</span>
+                      <h5 className="font-bold text-text-primary text-sm mt-0.5">Built JobPilot AI</h5>
+                      <p className="text-xs text-text-secondary mt-1 max-w-2xl leading-relaxed">
+                        Launched Indian market Career Automation Hub. Built fully optimized integrations with Gemini AI for resume bullet point mapping and cover letter drafting.
+                      </p>
+                    </div>
+                  </div>
+ 
+                  {/* 2025 */}
+                  <div className="relative group">
+                    <div className="absolute -left-[30px] top-1.5 w-4.5 h-4.5 rounded-full bg-accent-primary border-4 border-bg-base transition-transform group-hover:scale-120" />
+                    <div>
+                      <span className="text-[10px] font-bold text-accent-primary font-mono">2025</span>
+                      <h5 className="font-bold text-text-primary text-sm mt-0.5">Built HireLens</h5>
+                      <p className="text-xs text-text-secondary mt-1 max-w-2xl leading-relaxed">
+                        Engineered a lightweight visual ATS applicant tracking pipeline featuring real-time telemetry, keyword comparisons, and dashboard visualizations.
+                      </p>
+                    </div>
+                  </div>
+ 
+                  {/* 2024 */}
+                  <div className="relative group">
+                    <div className="absolute -left-[30px] top-1.5 w-4.5 h-4.5 rounded-full bg-accent-secondary border-4 border-bg-base transition-transform group-hover:scale-120" />
+                    <div>
+                      <span className="text-[10px] font-bold text-accent-secondary font-mono">2024</span>
+                      <h5 className="font-bold text-text-primary text-sm mt-0.5">Built TruPix</h5>
+                      <p className="text-xs text-text-secondary mt-1 max-w-2xl leading-relaxed">
+                        Developed an online image rendering SaaS with custom filters and edge optimizations. Successfully scaled backend endpoints to serve student developers.
+                      </p>
+                    </div>
+                  </div>
+ 
+                  {/* 2023 */}
+                  <div className="relative group">
+                    <div className="absolute -left-[30px] top-1.5 w-4.5 h-4.5 rounded-full bg-[#F59E0B] border-4 border-bg-base transition-transform group-hover:scale-120" />
+                    <div>
+                      <span className="text-[10px] font-bold text-[#F59E0B] font-mono">2023</span>
+                      <h5 className="font-bold text-text-primary text-sm mt-0.5">Built Localynk</h5>
+                      <p className="text-xs text-text-secondary mt-1 max-w-2xl leading-relaxed">
+                        Designed community platform solving local discovery challenges using lightweight SQL stores and TypeScript API modules.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+ 
+              {/* Action buttons */}
+              <div className="flex gap-4 pt-4 border-t border-border dark:border-t-white/5">
+                <button
+                  onClick={() => setActiveSec('personal')}
+                  className="px-4 py-2 bg-bg-elevated/40 hover:bg-bg-elevated/80 dark:bg-white/5 dark:hover:bg-white/10 text-xs font-semibold rounded-lg transition-all border border-border dark:border-white/5"
+                >
+                  Edit Profile Details
+                </button>
+                <button
+                  onClick={() => setActiveSec('skills')}
+                  className="px-4 py-2 bg-accent-primary/10 hover:bg-accent-primary/20 text-accent-primary text-xs font-semibold rounded-lg transition-all border border-accent-primary/20"
+                >
+                  Manage Skills Vault
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION: PERSONAL DETAILS */}
           {activeSec === 'personal' && (
             <div className="space-y-4">
-              <h3 className="font-bold text-text-secondary text-[10px] uppercase tracking-[0.08em] border-b border-border-base pb-2 mb-4">Personal Details</h3>
+              <h3 className="font-bold text-text-secondary text-[10px] uppercase tracking-[0.08em] border-b border-border dark:border-b-white/5 pb-2 mb-4">Personal Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">Full Name</label>
@@ -265,7 +419,7 @@ export default function ResumeVaultPage() {
                     type="text"
                     value={profile.name}
                     onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                    className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                   />
                 </div>
                 <div>
@@ -274,7 +428,7 @@ export default function ResumeVaultPage() {
                     type="email"
                     value={profile.email}
                     onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                    className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                   />
                 </div>
                 <div>
@@ -283,7 +437,7 @@ export default function ResumeVaultPage() {
                     type="text"
                     value={profile.phone}
                     onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                    className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                    className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                   />
                 </div>
                 <div>
@@ -292,17 +446,17 @@ export default function ResumeVaultPage() {
                     type="text"
                     value={profile.location}
                     onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                    className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                    className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                   />
                 </div>
               </div>
             </div>
           )}
-
-          {/* SECTION 2: SKILLS VAULT */}
+ 
+          {/* SECTION: SKILLS VAULT */}
           {activeSec === 'skills' && (
             <div className="space-y-4">
-              <h3 className="font-bold text-text-secondary text-[10px] uppercase tracking-[0.08em] border-b border-border-base pb-2 mb-4">Skills Vault</h3>
+              <h3 className="font-bold text-text-secondary text-[10px] uppercase tracking-[0.08em] border-b border-border dark:border-b-white/5 pb-2 mb-4">Skills Vault</h3>
               <p className="text-text-secondary text-xs leading-relaxed">
                 List the technical keywords you know. Make sure to separate them with commas (e.g. React, Next.js, Node.js, Python, PostgreSQL).
               </p>
@@ -315,11 +469,11 @@ export default function ResumeVaultPage() {
                   })
                 }
                 rows={8}
-                className="w-full p-3 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-sans leading-relaxed font-medium"
+                className="w-full p-3 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-sans leading-relaxed font-medium"
               />
               <div className="flex flex-wrap gap-1.5 mt-4">
                 {profile.skills.map((skill) => (
-                  <span key={skill} className="px-2.5 py-0.5 rounded-full bg-accent-glow text-accent-primary text-[10px] border border-accent-primary/25 font-mono font-medium">
+                  <span key={skill} className="px-2.5 py-0.5 rounded-full bg-accent-glow text-accent-primary text-[10px] border border-accent-primary/20 font-mono font-bold">
                     {skill}
                   </span>
                 ))}
@@ -327,35 +481,35 @@ export default function ResumeVaultPage() {
             </div>
           )}
 
-          {/* SECTION 3: WORK EXPERIENCE */}
+          {/* SECTION: WORK EXPERIENCE */}
           {activeSec === 'experience' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center border-b border-border-base pb-2">
+              <div className="flex justify-between items-center border-b border-border dark:border-b-white/5 pb-2">
                 <h3 className="font-bold text-text-secondary text-[10px] uppercase tracking-[0.08em]">Work Experience</h3>
                 <button
                   type="button"
                   onClick={addExperienceItem}
-                  className="inline-flex items-center gap-1 text-[11px] text-accent-primary hover:underline font-semibold"
+                  className="inline-flex items-center gap-1 text-[11px] text-accent-primary hover:underline font-bold"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add Position
                 </button>
               </div>
-
+ 
               {profile.experience.length === 0 ? (
                 <p className="text-text-tertiary text-xs italic text-center py-6">No experience added. Click &quot;Add Position&quot; to begin.</p>
               ) : (
                 <div className="space-y-6">
                   {profile.experience.map((exp, idx) => (
-                    <div key={idx} className="p-4 border border-border-base rounded bg-bg-elevated/20 space-y-3 relative">
+                    <div key={idx} className="p-4 border border-border dark:border-white/5 rounded-2xl bg-bg-surface/30 dark:bg-white/[0.01] space-y-3 relative">
                       <button
                         type="button"
                         onClick={() => removeExperienceItem(idx)}
-                        className="absolute top-4 right-4 p-1 text-text-secondary hover:text-rose-450 rounded transition-colors"
+                        className="absolute top-4 right-4 p-1 text-text-secondary hover:text-rose-400 rounded transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-
+ 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pr-8">
                         <div>
                           <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">Role Title</label>
@@ -363,7 +517,7 @@ export default function ResumeVaultPage() {
                             type="text"
                             value={exp.role}
                             onChange={(e) => updateExperienceItem(idx, 'role', e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                           />
                         </div>
                         <div>
@@ -372,7 +526,7 @@ export default function ResumeVaultPage() {
                             type="text"
                             value={exp.company}
                             onChange={(e) => updateExperienceItem(idx, 'company', e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                           />
                         </div>
                         <div>
@@ -382,11 +536,11 @@ export default function ResumeVaultPage() {
                             placeholder="e.g. May 2024 - Present"
                             value={exp.duration}
                             onChange={(e) => updateExperienceItem(idx, 'duration', e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                           />
                         </div>
                       </div>
-
+ 
                       <div>
                         <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">Description (Bullets, comma separated)</label>
                         <textarea
@@ -399,7 +553,7 @@ export default function ResumeVaultPage() {
                               e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
                             )
                           }
-                          className="w-full p-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-sans leading-relaxed font-medium"
+                          className="w-full p-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-sans leading-relaxed font-medium"
                         />
                       </div>
                     </div>
@@ -408,36 +562,36 @@ export default function ResumeVaultPage() {
               )}
             </div>
           )}
-
-          {/* SECTION 4: PROJECTS */}
+ 
+          {/* SECTION: PROJECTS */}
           {activeSec === 'projects' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center border-b border-border-base pb-2">
+              <div className="flex justify-between items-center border-b border-border dark:border-b-white/5 pb-2">
                 <h3 className="font-bold text-text-secondary text-[10px] uppercase tracking-[0.08em]">Projects</h3>
                 <button
                   type="button"
                   onClick={addProjectItem}
-                  className="inline-flex items-center gap-1 text-[11px] text-accent-primary hover:underline font-semibold"
+                  className="inline-flex items-center gap-1 text-[11px] text-accent-primary hover:underline font-bold"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add Project
                 </button>
               </div>
-
+ 
               {profile.projects.length === 0 ? (
                 <p className="text-text-tertiary text-xs italic text-center py-6">No projects added. Click &quot;Add Project&quot; to begin.</p>
               ) : (
                 <div className="space-y-6">
                   {profile.projects.map((proj, idx) => (
-                    <div key={idx} className="p-4 border border-border-base rounded bg-bg-elevated/20 space-y-3 relative">
+                    <div key={idx} className="p-4 border border-border dark:border-white/5 rounded-2xl bg-bg-surface/30 dark:bg-white/[0.01] space-y-3 relative">
                       <button
                         type="button"
                         onClick={() => removeProjectItem(idx)}
-                        className="absolute top-4 right-4 p-1 text-text-secondary hover:text-rose-455 rounded transition-colors"
+                        className="absolute top-4 right-4 p-1 text-text-secondary hover:text-rose-400 rounded transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-
+ 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-8">
                         <div>
                           <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">Project Name</label>
@@ -445,7 +599,7 @@ export default function ResumeVaultPage() {
                             type="text"
                             value={proj.name}
                             onChange={(e) => updateProjectItem(idx, 'name', e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                           />
                         </div>
                         <div>
@@ -461,18 +615,18 @@ export default function ResumeVaultPage() {
                                 e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
                               )
                             }
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                           />
                         </div>
                       </div>
-
+ 
                       <div>
                         <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">Project Description</label>
                         <textarea
                           rows={2}
                           value={proj.description}
                           onChange={(e) => updateProjectItem(idx, 'description', e.target.value)}
-                          className="w-full p-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-sans leading-relaxed font-medium"
+                          className="w-full p-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-sans leading-relaxed font-medium"
                         />
                       </div>
                     </div>
@@ -481,28 +635,28 @@ export default function ResumeVaultPage() {
               )}
             </div>
           )}
-
-          {/* SECTION 5: EDUCATION */}
+ 
+          {/* SECTION: EDUCATION */}
           {activeSec === 'education' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center border-b border-border-base pb-2">
+              <div className="flex justify-between items-center border-b border-border dark:border-b-white/5 pb-2">
                 <h3 className="font-bold text-text-secondary text-[10px] uppercase tracking-[0.08em]">Education</h3>
                 <button
                   type="button"
                   onClick={addEducationItem}
-                  className="inline-flex items-center gap-1 text-[11px] text-accent-primary hover:underline font-semibold"
+                  className="inline-flex items-center gap-1 text-[11px] text-accent-primary hover:underline font-bold"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add Education
                 </button>
               </div>
-
+ 
               {profile.education.length === 0 ? (
                 <p className="text-text-tertiary text-xs italic text-center py-6">No education history added. Click &quot;Add Education&quot; to begin.</p>
               ) : (
                 <div className="space-y-6">
                   {profile.education.map((edu, idx) => (
-                    <div key={idx} className="p-4 border border-border-base rounded bg-bg-elevated/20 space-y-3 relative">
+                    <div key={idx} className="p-4 border border-border dark:border-white/5 rounded-2xl bg-bg-surface/30 dark:bg-white/[0.01] space-y-3 relative">
                       <button
                         type="button"
                         onClick={() => removeEducationItem(idx)}
@@ -510,7 +664,7 @@ export default function ResumeVaultPage() {
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-
+ 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pr-8">
                         <div>
                           <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">Degree / Course</label>
@@ -519,7 +673,7 @@ export default function ResumeVaultPage() {
                             placeholder="e.g. B.Tech Computer Science"
                             value={edu.degree}
                             onChange={(e) => updateEducationItem(idx, 'degree', e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                           />
                         </div>
                         <div>
@@ -528,7 +682,7 @@ export default function ResumeVaultPage() {
                             type="text"
                             value={edu.school}
                             onChange={(e) => updateEducationItem(idx, 'school', e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                           />
                         </div>
                         <div>
@@ -538,7 +692,7 @@ export default function ResumeVaultPage() {
                             placeholder="e.g. 2025"
                             value={edu.year}
                             onChange={(e) => updateEducationItem(idx, 'year', e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                           />
                         </div>
                       </div>
@@ -548,11 +702,11 @@ export default function ResumeVaultPage() {
               )}
             </div>
           )}
-
-          {/* SECTION 6: TARGET PREFERENCES */}
+ 
+          {/* SECTION: TARGET PREFERENCES */}
           {activeSec === 'preferences' && (
             <div className="space-y-6">
-              <h3 className="font-bold text-text-secondary text-[10px] uppercase tracking-[0.08em] border-b border-border-base pb-2 mb-4">Target Preferences</h3>
+              <h3 className="font-bold text-text-secondary text-[10px] uppercase tracking-[0.08em] border-b border-border dark:border-b-white/5 pb-2 mb-4">Target Preferences</h3>
               
               {/* Target Roles */}
               <div className="space-y-2">
@@ -563,7 +717,7 @@ export default function ResumeVaultPage() {
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value)}
                     placeholder="e.g. Full Stack Developer"
-                    className="flex-1 px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                    className="flex-1 px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                   />
                   <button
                     type="button"
@@ -579,7 +733,7 @@ export default function ResumeVaultPage() {
                         setNewRole('');
                       }
                     }}
-                    className="px-4 h-9 bg-accent-primary text-text-primary rounded-[6px] text-xs font-semibold hover:bg-accent-primary/95 transition-all"
+                    className="px-4 h-9 bg-accent-primary text-white rounded-xl text-xs font-semibold hover:bg-accent-primary/95 transition-all"
                   >
                     Add
                   </button>
@@ -606,7 +760,7 @@ export default function ResumeVaultPage() {
                   ))}
                 </div>
               </div>
-
+ 
               {/* Locations */}
               <div className="space-y-2">
                 <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">Preferred Locations</label>
@@ -616,7 +770,7 @@ export default function ResumeVaultPage() {
                     value={newLoc}
                     onChange={(e) => setNewLoc(e.target.value)}
                     placeholder="e.g. Remote"
-                    className="flex-1 px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                    className="flex-1 px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                   />
                   <button
                     type="button"
@@ -632,14 +786,14 @@ export default function ResumeVaultPage() {
                         setNewLoc('');
                       }
                     }}
-                    className="px-4 h-9 bg-accent-primary text-text-primary rounded-[6px] text-xs font-semibold hover:bg-accent-primary/95 transition-all"
+                    className="px-4 h-9 bg-accent-primary text-white rounded-xl text-xs font-semibold hover:bg-accent-primary/95 transition-all"
                   >
                     Add
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {profile.preferences.locations.map((loc) => (
-                    <span key={loc} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] bg-bg-elevated text-text-secondary border border-border-base font-mono font-bold">
+                    <span key={loc} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 text-text-secondary font-mono font-bold">
                       {loc}
                       <button
                         onClick={() =>
@@ -659,7 +813,7 @@ export default function ResumeVaultPage() {
                   ))}
                 </div>
               </div>
-
+ 
               {/* Work Type & Level */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -672,7 +826,7 @@ export default function ResumeVaultPage() {
                         preferences: { ...profile.preferences, work_type: e.target.value },
                       })
                     }
-                    className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                    className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                   >
                     <option value="remote">Remote</option>
                     <option value="hybrid">Hybrid</option>
@@ -689,7 +843,7 @@ export default function ResumeVaultPage() {
                         preferences: { ...profile.preferences, experience_level: e.target.value },
                       })
                     }
-                    className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary focus:outline-none focus:border-border-highlight font-medium"
+                    className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-medium"
                   >
                     <option value="fresher">Fresher (0 - 1 year)</option>
                     <option value="1-2yr">1 - 2 years</option>

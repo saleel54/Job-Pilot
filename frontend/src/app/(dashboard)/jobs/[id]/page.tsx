@@ -82,15 +82,21 @@ export default function JobDetailPage() {
   // Tracker State
   const [trackerLoading, setTrackerLoading] = useState(false);
   const [isAddedToTracker, setIsAddedToTracker] = useState(false);
+  const [trackerStatus, setTrackerStatus] = useState<string | null>(null);
+  const [showApplyConfirmModal, setShowApplyConfirmModal] = useState(false);
 
   useEffect(() => {
     async function loadJobAndProfile() {
       try {
         setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
         // Fetch profile
         const { data: userProfile } = await supabase
           .from('users_profile')
           .select('*')
+          .eq('id', user.id)
           .maybeSingle();
 
         setProfile(userProfile);
@@ -100,6 +106,7 @@ export default function JobDetailPage() {
           .from('jobs')
           .select('*')
           .eq('id', jobID)
+          .eq('user_id', user.id)
           .single();
 
         if (jobData) {
@@ -108,12 +115,14 @@ export default function JobDetailPage() {
           // Check if already in applications tracker
           const { data: appData } = await supabase
             .from('applications')
-            .select('id')
+            .select('id, status')
             .eq('job_id', jobID)
+            .eq('user_id', user.id)
             .maybeSingle();
 
           if (appData) {
             setIsAddedToTracker(true);
+            setTrackerStatus(appData.status);
           }
         }
       } catch (err) {
@@ -142,6 +151,8 @@ export default function JobDetailPage() {
       setMatchLoading(true);
       setMatchError('');
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
         const response = await fetchAI('/api/ai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -164,7 +175,8 @@ export default function JobDetailPage() {
             match_score: analysis.match_score,
             match_data: analysis,
           })
-          .eq('id', currentJob.id);
+          .eq('id', currentJob.id)
+          .eq('user_id', user.id);
 
         if (error) throw error;
 
@@ -312,10 +324,57 @@ export default function JobDetailPage() {
 
       if (error) throw error;
       setIsAddedToTracker(true);
+      setTrackerStatus('saved');
     } catch (err) {
       console.error('Failed to save to tracker:', err);
     } finally {
       setTrackerLoading(false);
+    }
+  };
+
+  // Mark job as applied in tracker
+  const markAsApplied = async () => {
+    if (!job) return;
+    setTrackerLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      if (isAddedToTracker) {
+        // Update existing application
+        const { error } = await supabase
+          .from('applications')
+          .update({
+            status: 'applied',
+            status_history: [{ status: 'applied', changed_at: new Date().toISOString() }],
+          })
+          .eq('job_id', job.id)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        setTrackerStatus('applied');
+      } else {
+        // Create new application in applied state
+        const { error } = await supabase
+          .from('applications')
+          .insert({
+            user_id: user.id,
+            job_id: job.id,
+            status: 'applied',
+            resume_version: getCompiledProfile(),
+            cover_letter: coverLetter || null,
+            status_history: [{ status: 'applied', changed_at: new Date().toISOString() }],
+          });
+
+        if (error) throw error;
+        setIsAddedToTracker(true);
+        setTrackerStatus('applied');
+      }
+    } catch (err) {
+      console.error('Failed to mark as applied:', err);
+    } finally {
+      setTrackerLoading(false);
+      setShowApplyConfirmModal(false);
     }
   };
 
@@ -384,28 +443,36 @@ export default function JobDetailPage() {
 
         <div className="flex gap-3 w-full md:w-auto">
           {job.source_url && (
-            <a
-              href={job.source_url}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              onClick={() => {
+                window.open(job.source_url, '_blank', 'noopener,noreferrer');
+                setShowApplyConfirmModal(true);
+              }}
               className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-border-base text-text-primary bg-bg-elevated hover:bg-bg-surface rounded-[6px] text-xs font-semibold transition-colors"
             >
               Apply Link
               <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            </button>
           )}
 
           <button
             onClick={addToTracker}
-            disabled={isAddedToTracker || trackerLoading}
+            disabled={(isAddedToTracker && trackerStatus === 'applied') || trackerLoading}
             className={`flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-[6px] text-xs font-semibold transition-all ${
-              isAddedToTracker 
-                ? 'bg-bg-elevated border border-border-base text-text-tertiary cursor-default' 
-                : 'bg-accent-primary text-text-primary hover:opacity-90 active:scale-[0.98]'
+              isAddedToTracker && trackerStatus === 'applied'
+                ? 'bg-bg-elevated border border-border-base text-accent-green cursor-default'
+                : isAddedToTracker
+                  ? 'bg-bg-elevated border border-border-base text-text-tertiary cursor-default'
+                  : 'bg-accent-primary text-text-primary hover:opacity-90 active:scale-[0.98]'
             }`}
           >
             {trackerLoading ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : isAddedToTracker && trackerStatus === 'applied' ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-accent-green" />
+                Applied
+              </>
             ) : isAddedToTracker ? (
               <>
                 <Check className="w-3.5 h-3.5 text-accent-green" />
@@ -675,7 +742,7 @@ export default function JobDetailPage() {
                 </div>
                 
                 <div>
-                  <h3 className="text-xs font-bold text-indigo-600 border-b border-slate-100 pb-1 uppercase tracking-wider mb-2">Experience</h3>
+                  <h3 className="text-xs font-bold text-accent-primary border-b border-slate-100 pb-1 uppercase tracking-wider mb-2">Experience</h3>
                   {getCompiledProfile()?.experience?.map((exp: any, i: number) => (
                     <div key={i} className="mb-3">
                       <div className="flex justify-between font-bold">
@@ -693,7 +760,7 @@ export default function JobDetailPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-xs font-bold text-indigo-600 border-b border-slate-100 pb-1 uppercase tracking-wider mb-2">Projects</h3>
+                  <h3 className="text-xs font-bold text-accent-primary border-b border-slate-100 pb-1 uppercase tracking-wider mb-2">Projects</h3>
                   {getCompiledProfile()?.projects?.map((proj: any, i: number) => (
                     <div key={i} className="mb-2">
                       <div className="flex justify-between font-bold">
@@ -706,7 +773,7 @@ export default function JobDetailPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-xs font-bold text-indigo-600 border-b border-slate-100 pb-1 uppercase tracking-wider mb-2">Skills</h3>
+                  <h3 className="text-xs font-bold text-accent-primary border-b border-slate-100 pb-1 uppercase tracking-wider mb-2">Skills</h3>
                   <p className="flex flex-wrap gap-2">
                     {getCompiledProfile()?.skills?.map((s: string) => (
                       <span key={s} className="bg-slate-100 px-2 py-0.5 rounded text-[10px]">{s}</span>
@@ -901,6 +968,48 @@ export default function JobDetailPage() {
                 <p className="text-text-tertiary text-[11px] mt-1">Select an outreach format and click &quot;Generate Outreach&quot; to begin.</p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Track Application Modal */}
+      {showApplyConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-bg-surface border border-border rounded-[24px] p-6 shadow-2xl space-y-6">
+            <div className="space-y-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-accent-primary/10 border border-accent-primary/20 text-accent-primary uppercase tracking-widest">
+                <Sparkles className="w-3 h-3" />
+                Track Application
+              </span>
+              <h3 className="text-lg font-bold text-text-primary font-heading">
+                Did you apply to {job.company}?
+              </h3>
+              <p className="text-text-secondary text-xs leading-relaxed">
+                We opened the job application page for **{job.title}** at **{job.company}** in a new tab. 
+                If you successfully submitted your application, mark it as **Applied** to update your pipeline telemetry and tracking dashboard.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={markAsApplied}
+                disabled={trackerLoading}
+                className="flex-1 h-10 bg-gradient-to-r from-[#00D67A] to-[#00A65A] text-[#0A0F0C] rounded-xl text-xs font-bold shadow-md hover:shadow-[0_10px_30px_rgba(0,214,122,0.35)] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 btn-magnetic"
+              >
+                {trackerLoading ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
+                Yes, mark as Applied
+              </button>
+              <button
+                onClick={() => setShowApplyConfirmModal(false)}
+                className="px-4 h-10 border border-border bg-bg-elevated hover:bg-bg-surface text-text-primary rounded-xl text-xs font-semibold active:scale-[0.98] transition-all"
+              >
+                Not yet / Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

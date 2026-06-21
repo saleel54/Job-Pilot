@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Inter_Tight } from "next/font/google";
 import "./globals.css";
+import MouseGlowTracker from "@/components/MouseGlowTracker";
 
 const inter = Inter({ 
   subsets: ["latin"],
   variable: "--font-sans",
+});
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  variable: "--font-heading",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -23,13 +29,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                const savedTheme = localStorage.getItem('theme');
+                const savedTheme = localStorage.getItem('theme') || 'dark';
                 if (savedTheme === 'dark') {
                   document.documentElement.classList.add('dark');
                 } else {
@@ -40,7 +46,25 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans antialiased bg-bg-base text-text-primary">{children}</body>
+      <body className="font-sans antialiased text-text-primary min-h-screen relative overflow-x-hidden selection:bg-accent-primary/20 selection:text-text-primary">
+        {/* Layer 1 & 2: Soft mesh gradient + slow moving blobs */}
+        <div className="liquid-mesh">
+          <div className="blob blob-purple"></div>
+          <div className="blob blob-blue"></div>
+          <div className="blob blob-indigo"></div>
+        </div>
+        {/* Layer 3: Subtle Noise Overlay */}
+        <div className="noise-overlay"></div>
+
+        {/* Mouse tracking glow script */}
+        <MouseGlowTracker />
+
+        {/* Content Layer */}
+        <div className="relative z-10 min-h-screen flex flex-col">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }
+

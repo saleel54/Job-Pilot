@@ -108,7 +108,7 @@ export default function AboutPage() {
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-bg-surface border border-border-base p-8 rounded-2xl relative overflow-hidden group hover:border-border-highlight transition-all duration-300 shadow-sm">
               {/* Decorative top gradient accent */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-primary via-indigo-400 to-accent-primary"></div>
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-primary via-[#7CFFB2] to-accent-primary"></div>
               
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative w-36 h-36 rounded-full overflow-hidden ring-4 ring-accent-primary/10 group-hover:ring-accent-primary/30 transition-all duration-300">

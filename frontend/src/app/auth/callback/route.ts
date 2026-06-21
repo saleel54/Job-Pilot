@@ -12,9 +12,12 @@ export async function GET(request: Request) {
     
     if (!error) {
       // Check if profile exists for redirect
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { data: profile } = await supabase
         .from('users_profile')
         .select('id')
+        .eq('id', user?.id)
         .maybeSingle();
 
       if (!profile) {

@@ -83,6 +83,7 @@ export default function OnboardingPage() {
       const { data: existingProfile } = await supabase
         .from('users_profile')
         .select('id')
+        .eq('id', user.id)
         .maybeSingle();
 
       if (existingProfile) {

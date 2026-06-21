@@ -62,6 +62,7 @@ export default function AuthPage() {
         const { data: profile, error: profileErr } = await supabase
           .from('users_profile')
           .select('id')
+          .eq('id', data.user?.id)
           .maybeSingle();
 
         if (profileErr) {
@@ -99,21 +100,25 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-base flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-bg-surface border border-border-base rounded p-8 z-10">
+    <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
+      {/* Background glow highlights */}
+      <div className="absolute top-1/4 left-1/3 w-72 h-72 bg-accent-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-accent-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="w-full max-w-md glass-panel p-8 rounded-[32px] border border-border dark:border-white/10 shadow-2xl relative overflow-hidden z-10">
         
         {/* Logo and Tagline */}
         <div className="text-center mb-8">
           <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-32 w-auto mx-auto mb-3 block dark:hidden" />
           <img src="/logo-dark.png" alt="JobPilot AI Logo" className="h-32 w-auto mx-auto mb-3 hidden dark:block" />
-          <p className="text-text-secondary text-xs mt-1 font-medium">Accelerate your career in tech</p>
+          <p className="text-text-secondary text-xs mt-1 font-semibold">Accelerate your career in tech</p>
         </div>
-
+ 
         {/* Tab Toggle */}
-        <div className="flex border-b border-border-base mb-6 text-xs font-semibold">
+        <div className="flex border-b border-border dark:border-white/5 mb-6 text-xs font-bold uppercase tracking-wider">
           <button
             type="button"
-            className={`flex-1 pb-3 text-xs font-semibold transition-colors duration-150 border-b-2 ${
+            className={`flex-1 pb-3 text-xs font-bold transition-colors duration-150 border-b-2 ${
               !isSignUp ? 'border-accent-primary text-text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'
             }`}
             onClick={() => {
@@ -126,7 +131,7 @@ export default function AuthPage() {
           </button>
           <button
             type="button"
-            className={`flex-1 pb-3 text-xs font-semibold transition-colors duration-150 border-b-2 ${
+            className={`flex-1 pb-3 text-xs font-bold transition-colors duration-150 border-b-2 ${
               isSignUp ? 'border-accent-primary text-text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'
             }`}
             onClick={() => {
@@ -138,19 +143,19 @@ export default function AuthPage() {
             Sign Up
           </button>
         </div>
-
+ 
         {/* Status Messages */}
         {errorMsg && (
-          <div className="p-3 mb-4 text-xs bg-accent-amber/10 text-accent-amber border border-accent-amber/20 rounded-[4px]">
+          <div className="p-3 mb-4 text-xs bg-accent-amber/10 text-accent-amber border border-accent-amber/25 rounded-xl">
             {errorMsg}
           </div>
         )}
         {successMsg && (
-          <div className="p-3 mb-4 text-xs bg-accent-green/10 text-accent-green border border-accent-green/20 rounded-[4px]">
+          <div className="p-3 mb-4 text-xs bg-accent-green/10 text-accent-green border border-accent-green/25 rounded-xl">
             {successMsg}
           </div>
         )}
-
+ 
         {/* Auth Form */}
         <form onSubmit={handleAuth} className="space-y-4">
           {isSignUp && (
@@ -164,11 +169,11 @@ export default function AuthPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Rahul Sharma"
-                className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight"
+                className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
               />
             </div>
           )}
-
+ 
           <div>
             <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">
               Email Address
@@ -179,10 +184,10 @@ export default function AuthPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight"
+              className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
             />
           </div>
-
+ 
           <div>
             <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-1.5">
               Password
@@ -193,34 +198,34 @@ export default function AuthPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 py-2 bg-bg-elevated border border-border-base rounded-[6px] text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight"
+              className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
             />
           </div>
-
+ 
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-9 bg-accent-primary text-text-primary rounded-[6px] text-xs font-semibold hover:bg-accent-primary/95 transition-all disabled:opacity-50 flex items-center justify-center"
+            className="w-full h-10 bg-gradient-to-r from-[#00D67A] to-[#00A65A] text-[#0A0F0C] rounded-xl text-xs font-bold hover:shadow-[0_10px_30px_rgba(0,214,122,0.35)] transition-all disabled:opacity-50 flex items-center justify-center btn-magnetic shadow-lg"
           >
             {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
           </button>
         </form>
-
+ 
         {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border-base"></span>
+            <span className="w-full border-t border-border dark:border-white/5"></span>
           </div>
           <div className="relative flex justify-center text-[10px] uppercase font-mono">
-            <span className="bg-bg-surface px-2 text-text-tertiary">Or continue with</span>
+            <span className="bg-bg-surface dark:bg-[#121A15] px-3 text-text-tertiary">Or continue with</span>
           </div>
         </div>
-
+ 
         {/* Google OAuth Button */}
         <button
           type="button"
           onClick={handleGoogleSignIn}
-          className="w-full h-9 bg-bg-elevated border border-border-base hover:border-border-highlight text-text-primary rounded-[6px] text-xs font-semibold transition-colors flex items-center justify-center gap-2"
+          className="w-full h-10 bg-bg-elevated/40 dark:bg-white/5 border border-border dark:border-white/5 hover:border-border-highlight dark:hover:border-white/12 text-text-primary rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 btn-magnetic"
         >
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path
