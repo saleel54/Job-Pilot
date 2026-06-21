@@ -44,6 +44,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .eq('id', user.id)
         .maybeSingle();
 
+      // If no profile exists, redirect to onboarding to complete setup
+      if (!profile) {
+        router.push('/onboarding');
+        return;
+      }
+
       if (profile?.name) {
         setUserName(profile.name);
       }

@@ -52,6 +52,7 @@ export default function InsightsPage() {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [insights, setInsights] = useState<Insights | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [hasGeminiKey, setHasGeminiKey] = useState(true);
   
   // Roadmap states
   const [showRoadmap, setShowRoadmap] = useState(false);
@@ -61,6 +62,11 @@ export default function InsightsPage() {
     async function loadData() {
       try {
         setLoading(true);
+
+        // Check for Gemini API key
+        const key = typeof window !== 'undefined' ? localStorage.getItem('user_gemini_api_key') || '' : '';
+        setHasGeminiKey(!!key && key.startsWith('AIzaSy'));
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
@@ -212,6 +218,24 @@ export default function InsightsPage() {
           Refresh Analysis
         </button>
       </div>
+
+      {/* Missing API Key Warning Banner */}
+      {!hasGeminiKey && (
+        <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl">
+          <svg className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.193 2.5 1.732 2.5z" />
+          </svg>
+          <div className="flex-1">
+            <p className="text-xs font-bold text-amber-600 dark:text-amber-400">Gemini API Key not configured</p>
+            <p className="text-[11px] text-text-secondary mt-0.5 leading-relaxed">
+              The insights below are AI-generated demo data. To get <span className="font-bold text-text-primary">real, personalized career insights</span> based on your actual profile and skill gaps, please add your Gemini API key.
+            </p>
+          </div>
+          <a href="/settings" className="flex-shrink-0 h-7 px-3 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold rounded-lg transition-colors inline-flex items-center">
+            Add Key →
+          </a>
+        </div>
+      )}
  
       {/* MENTOR WELCOME CARD & Roadmap section */}
       <div className="grid grid-cols-1 gap-6">
@@ -293,16 +317,24 @@ export default function InsightsPage() {
         <div className="glass-card p-5 relative flex flex-col justify-between h-[100px] rounded-2xl">
           <span className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] font-sans">Best Matching Role</span>
           <p className="font-extrabold text-text-primary text-sm leading-tight mt-2 font-heading">
-            {insights?.best_performing_role_type || 'Full Stack Developer'}
+            {insightsLoading ? (
+              <span className="inline-block w-32 h-4 bg-bg-elevated animate-pulse rounded"></span>
+            ) : (
+              insights?.best_performing_role_type || 'Full Stack Developer'
+            )}
           </p>
           <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#00D67A]"></div>
         </div>
 
         <div className="glass-card p-5 relative flex flex-col justify-between h-[100px] rounded-2xl">
-          <span className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] font-sans">Average Match Score</span>
+          <span className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] font-sans">Avg Match Score Trend</span>
           <div className="flex items-baseline gap-1 mt-2">
             <span className="text-2xl font-extrabold text-text-primary font-mono leading-none">
-              78%
+              {insightsLoading ? (
+                <span className="inline-block w-16 h-7 bg-bg-elevated animate-pulse rounded"></span>
+              ) : insights?.match_score_trend?.length ? (
+                `${insights.match_score_trend[insights.match_score_trend.length - 1].score}%`
+              ) : '—'}
             </span>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#7CFFB2]"></div>
@@ -311,7 +343,11 @@ export default function InsightsPage() {
         <div className="glass-card p-5 relative flex flex-col justify-between h-[100px] rounded-2xl">
           <span className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.08em] font-sans">Top Skill Deficit</span>
           <p className="font-extrabold text-text-primary text-sm leading-tight capitalize mt-2 font-heading">
-            AWS S3 / Deployment
+            {insightsLoading ? (
+              <span className="inline-block w-28 h-4 bg-bg-elevated animate-pulse rounded"></span>
+            ) : (
+              insights?.top_skill_gaps?.[0]?.skill || 'No gaps found'
+            )}
           </p>
           <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#2D473A]"></div>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { 
   Trash2, 
@@ -117,8 +117,12 @@ export default function ResumeVaultPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
-  
   const [activeSec, setActiveSec] = useState<SectionType>('dna');
+
+  // Resume upload states
+  const resumeFileRef = useRef<HTMLInputElement>(null);
+  const [resumeUploadStatus, setResumeUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [resumeUploadMsg, setResumeUploadMsg] = useState('');
 
   // Multi-input temporary states
   const [newRole, setNewRole] = useState('');
@@ -195,6 +199,81 @@ export default function ResumeVaultPage() {
       alert('Failed to save profile changes.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setResumeUploadStatus('error');
+      setResumeUploadMsg('Only PDF resumes are supported.');
+      return;
+    }
+
+    setResumeUploadStatus('uploading');
+    setResumeUploadMsg('Parsing your resume with AI — this takes a few seconds...');
+
+    const formData = new FormData();
+    formData.append('resume', file);
+
+    try {
+      const customKey = typeof window !== 'undefined' ? localStorage.getItem('user_gemini_api_key') || '' : '';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const response = await fetch(`${backendUrl}/api/parse-resume`, {
+        method: 'POST',
+        headers: {
+          'x-gemini-api-key': customKey,
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to parse resume.');
+
+      // Update Supabase profile with parsed data
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Session expired. Please log in again.');
+
+      const { error: updateError } = await supabase.from('users_profile').update({
+        name: result.profile.name,
+        phone: result.profile.phone,
+        location: result.profile.location,
+        skills: result.profile.skills,
+        experience: result.profile.experience,
+        projects: result.profile.projects,
+        education: result.profile.education,
+        raw_resume_text: result.raw_text || '',
+      }).eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state with new parsed profile
+      setProfile(prev => prev ? {
+        ...prev,
+        name: result.profile.name || prev.name,
+        phone: result.profile.phone || prev.phone,
+        location: result.profile.location || prev.location,
+        skills: result.profile.skills || prev.skills,
+        experience: result.profile.experience || prev.experience,
+        projects: result.profile.projects || prev.projects,
+        education: result.profile.education || prev.education,
+      } : prev);
+
+      setResumeUploadStatus('success');
+      setResumeUploadMsg('Resume updated! Your AI profile has been refreshed successfully.');
+      setTimeout(() => setResumeUploadStatus('idle'), 5000);
+    } catch (err: any) {
+      console.error('Resume upload error:', err);
+      setResumeUploadStatus('error');
+      setResumeUploadMsg(err.message || 'Failed to process resume. Please try again.');
+    } finally {
+      if (resumeFileRef.current) resumeFileRef.current.value = '';
     }
   };
 
@@ -390,6 +469,49 @@ export default function ResumeVaultPage() {
                 </div>
               </div>
  
+              {/* Upload New Resume panel */}
+              <div className="p-5 bg-bg-surface/40 dark:bg-white/[0.02] border border-border dark:border-white/5 rounded-2xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-extrabold text-text-primary text-xs">Upload New Resume</h4>
+                    <p className="text-[11px] text-text-secondary mt-0.5">Re-parse your profile from a new PDF to update AI matching data instantly.</p>
+                  </div>
+                  <input
+                    ref={resumeFileRef}
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleResumeUpload}
+                    className="hidden"
+                    id="dna-resume-upload"
+                  />
+                  <label
+                    htmlFor="dna-resume-upload"
+                    className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer flex-shrink-0 ${
+                      resumeUploadStatus === 'uploading'
+                        ? 'bg-bg-elevated text-text-secondary cursor-not-allowed'
+                        : 'bg-accent-primary hover:bg-accent-primary/95 text-white shadow-lg shadow-accent-primary/20'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    {resumeUploadStatus === 'uploading' ? 'Uploading...' : 'Upload PDF'}
+                  </label>
+                </div>
+                {resumeUploadStatus === 'uploading' && (
+                  <div className="flex items-center gap-2 text-xs text-accent-primary">
+                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-accent-primary"></div>
+                    <span>{resumeUploadMsg}</span>
+                  </div>
+                )}
+                {resumeUploadStatus === 'success' && (
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">✓ {resumeUploadMsg}</p>
+                )}
+                {resumeUploadStatus === 'error' && (
+                  <p className="text-xs text-rose-500 font-semibold">{resumeUploadMsg}</p>
+                )}
+              </div>
+
               {/* Action buttons */}
               <div className="flex gap-4 pt-4 border-t border-border dark:border-t-white/5">
                 <button

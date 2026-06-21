@@ -300,17 +300,22 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!userGeminiKey.trim()) {
-                    setErrorMsg('Please enter a valid Gemini API Key to continue.');
+                  const trimmed = userGeminiKey.trim();
+                  if (!trimmed) {
+                    setErrorMsg('A Gemini API Key is required to use JobPilot AI. Please enter your key to continue.');
+                    return;
+                  }
+                  if (!trimmed.startsWith('AIzaSy') || trimmed.length < 30) {
+                    setErrorMsg('That doesn\'t look like a valid Gemini API Key. It should start with "AIzaSy" and be at least 30 characters. Please check and try again.');
                     return;
                   }
                   setErrorMsg('');
-                  localStorage.setItem('user_gemini_api_key', userGeminiKey.trim());
+                  localStorage.setItem('user_gemini_api_key', trimmed);
                   setStep(2);
                 }}
                 className="px-4 py-2 bg-accent-primary text-text-primary rounded-[6px] text-xs font-semibold hover:opacity-90 transition-colors"
               >
-                Save & Continue
+                Save & Continue →
               </button>
             </div>
           </div>

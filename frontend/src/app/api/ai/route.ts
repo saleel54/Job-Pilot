@@ -332,19 +332,37 @@ Respond with a JSON object strictly matching this schema:
       case 'career_insights':
         // For career insights, options should contain previous job applications list
         const applications = options?.applications || [];
-        prompt = `Analyze the candidate's job application history (applications logged in the tracker) and their profile to produce career insights.
+        const hasApplications = applications.length > 0;
+        prompt = `You are an expert career coach analyzing a job seeker's profile${hasApplications ? ' and their application history' : ''}.
+
 Candidate Profile:
 ${JSON.stringify(profile, null, 2)}
 
-Logged Applications List:
+${hasApplications ? `Logged Applications (${applications.length} total):
 ${JSON.stringify(applications, null, 2)}
 
-Identify matching trends, skill gaps, recommendations, and certificate suggestions.
-Match Trend: Return historical score averages for the past weeks.
-Skill Gaps: Return top 5 technical skills appearing frequently in applied job descriptions but missing from the candidate's profile.
-Best Performing Role: Role category that got the most positive response or matches most applications.
-Recommendations: Provide 3 actionable profile-specific suggestions.
-Suggested Certifications: Suggest 1 or 2 real, recognizable certifications to fill the skill gaps.
+Analyze the applications to find patterns — which roles got responses, which skills were repeatedly required but missing, and how match scores changed over time.` : `The candidate has not yet logged any applications. Instead, analyze their profile directly:
+- Look at their current skills vs what is typically required for their target roles: ${JSON.stringify(profile?.preferences?.target_roles || [], null, 2)}
+- Consider their experience level: ${profile?.preferences?.experience_level || 'fresher'}
+- Identify the most impactful skill gaps for Indian job market roles in their target area
+- Generate realistic match score trend data (simulate 4 weeks of improving scores starting from 60-75)
+- Focus recommendations on what they can do RIGHT NOW to get their first callbacks`}
+
+Generate career intelligence with these exact requirements:
+
+1. match_score_trend: Array of 4 entries with realistic week-over-week score progression. Dates should be real recent dates (past 4 weeks from today: ${new Date().toISOString().split('T')[0]}).
+
+2. top_skill_gaps: Top 4-5 skills that are HIGH DEMAND in the Indian job market for their target roles but NOT present in their skills list. Each skill must be a real, specific technology/tool (e.g. "Docker", "Redis", "AWS S3", "System Design"). Count should reflect approximate job postings requiring it.
+
+3. best_performing_role_type: The single best role category that matches their profile most strongly. Be specific (e.g. "Full Stack Developer (React + Node.js)" not just "developer").
+
+4. recommendations: Exactly 3 HIGHLY SPECIFIC, ACTIONABLE recommendations. Each must:
+   - Reference a specific skill from their profile or a specific gap
+   - Suggest a concrete action (build a project, add a metric, get a certification)
+   - Be relevant to the Indian job market and their experience level
+   - NOT be generic advice like "improve your resume" — be specific
+
+5. suggested_certifications: 2 real, recognized certifications that directly address their top skill gaps. Include the issuing organization (e.g. "AWS Cloud Practitioner — Amazon Web Services", "Meta Front-End Developer Certificate — Coursera").
 
 Respond with a JSON object strictly matching this schema:
 {
