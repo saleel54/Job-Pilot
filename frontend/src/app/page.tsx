@@ -27,7 +27,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-10">
             <Link href="/" className="flex items-center">
               {/* Logo (Light theme by default for landing page) */}
-              <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-24 w-auto block" />
+              <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-32 w-auto block" />
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               <Link href="#features" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">

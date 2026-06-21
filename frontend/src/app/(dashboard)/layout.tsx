@@ -91,8 +91,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Brand Logo */}
         <div className="flex items-center justify-center px-6 py-6 border-b border-border dark:border-white/5">
           <Link href="/dashboard" className="flex items-center justify-center">
-            <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-24 w-auto object-contain block dark:hidden" />
-            <img src="/logo-dark.png" alt="JobPilot AI Logo" className="h-24 w-auto object-contain hidden dark:block" />
+            <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-32 w-auto object-contain block dark:hidden" />
+            <img src="/logo-dark.png" alt="JobPilot AI Logo" className="h-32 w-auto object-contain hidden dark:block" />
           </Link>
         </div>
 
@@ -187,8 +187,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="md:hidden flex items-center justify-between px-6 py-4 bg-bg-surface/85 backdrop-blur-md border-b border-border dark:border-white/5">
           <div className="flex items-center">
             <Link href="/dashboard">
-              <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-16 w-auto max-w-[150px] object-contain block dark:hidden" />
-              <img src="/logo-dark.png" alt="JobPilot AI Logo" className="h-16 w-auto max-w-[150px] object-contain hidden dark:block" />
+              <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-20 w-auto max-w-[180px] object-contain block dark:hidden" />
+              <img src="/logo-dark.png" alt="JobPilot AI Logo" className="h-20 w-auto max-w-[180px] object-contain hidden dark:block" />
             </Link>
           </div>
           <div className="flex items-center gap-3">

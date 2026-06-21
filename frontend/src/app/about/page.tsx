@@ -45,8 +45,8 @@ export default function AboutPage() {
           <div className="flex items-center gap-10">
             <Link href="/" className="flex items-center">
               {/* Dynamic Theme Aware Logo */}
-              <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-16 w-auto block dark:hidden" />
-              <img src="/logo-dark.png" alt="JobPilot AI Logo" className="h-16 w-auto hidden dark:block" />
+              <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-24 w-auto block dark:hidden" />
+              <img src="/logo-dark.png" alt="JobPilot AI Logo" className="h-24 w-auto object-contain hidden dark:block" />
             </Link>
           </div>
 

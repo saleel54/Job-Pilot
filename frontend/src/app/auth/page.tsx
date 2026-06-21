@@ -121,7 +121,7 @@ export default function AuthPage() {
         
         {/* Logo and Tagline (Light theme logo exclusively for login page) */}
         <div className="text-center mb-8">
-          <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-32 w-auto mx-auto mb-3 block" />
+          <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-40 w-auto mx-auto mb-3 block" />
           <p className="text-text-secondary text-xs mt-1 font-semibold">Accelerate your career in tech</p>
         </div>
  
