@@ -61,18 +61,18 @@ export default function LandingPage() {
         <div className="lg:col-span-7 text-left space-y-6">
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-bold bg-accent-primary/10 border border-accent-primary/25 text-accent-primary uppercase tracking-widest">
             <Sparkles className="w-3.5 h-3.5 text-accent-primary" />
-            AI-Powered Career Automation
+            Personalised AI Job Portal
           </span>
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl text-slate-900 font-heading">
             Your AI{' '}
             <span className="bg-gradient-to-r from-[#00D67A] via-[#7CFFB2] to-[#00A65A] bg-clip-text text-transparent">
-              Career Copilot
+              Personalised Job Portal
             </span>
           </h1>
 
           <p className="text-slate-700 text-base md:text-lg max-w-xl leading-relaxed">
-            Stop searching for jobs. Let AI find, analyze and optimize every opportunity for you. JobPilot AI parses your resume, matches you with developer roles, and tailors your profile.
+            Stop searching for jobs. Let AI find, analyze and optimize every opportunity for you. JobPilot AI parses your resume, matches you with relevant roles across all domains, and tailors your profile.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row justify-start items-center gap-4">
@@ -111,7 +111,7 @@ export default function LandingPage() {
             </div>
             <h3 className="text-lg font-bold text-slate-900 font-heading">Smart JD Match</h3>
             <p className="text-slate-600 text-xs leading-relaxed">
-              Instantly compare any job description with your developer profile to calculate fit, flag missing keywords, and suggest fixes.
+              Instantly compare any job description with your candidate profile to calculate fit, flag missing keywords, and suggest fixes.
             </p>
           </div>
 
@@ -148,7 +148,7 @@ export default function LandingPage() {
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative w-36 h-36 rounded-full overflow-hidden ring-4 ring-accent-primary/25 group-hover:ring-accent-primary/40 transition-all duration-300">
                   <img 
-                    src="/profile.png" 
+                    src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=256&h=256&q=80" 
                     alt="Yoosuf Ali Saleel" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -229,7 +229,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-slate-200/80 py-10 bg-white/40 text-slate-500 relative z-10 text-xs transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>© 2026 JobPilot AI. Built for developers in India.</p>
+          <p>© 2026 JobPilot AI. Built for students and job seekers in India.</p>
           <div className="flex gap-6 font-semibold">
             <Link href="#about" className="hover:text-slate-900">About Us</Link>
             <a href="#" className="hover:text-slate-900">Privacy</a>

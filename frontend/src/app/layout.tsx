@@ -20,7 +20,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "JobPilot AI — AI-powered Job Search & Application Tailoring",
-  description: "The ultimate AI career assistant for fresh graduates and early-career developers in India. Tailor resumes, generate cover letters, analyze match fit, and track applications powered by Gemini API.",
+  description: "The ultimate personalised AI job portal and career assistant for fresh graduates and students in India. Tailor resumes, generate cover letters, analyze match fit, and track applications powered by Gemini API.",
 };
 
 export default function RootLayout({

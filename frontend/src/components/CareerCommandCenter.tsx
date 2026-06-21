@@ -15,7 +15,7 @@ interface CareerCommandCenterProps {
 }
 
 export default function CareerCommandCenter({ 
-  profileImage = '/profile.png',
+  profileImage = 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=256&h=256&q=80',
   userName = 'Saleel' 
 }: CareerCommandCenterProps) {
   const nodes = [
