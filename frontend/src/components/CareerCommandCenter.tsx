@@ -22,40 +22,40 @@ export default function CareerCommandCenter({
     {
       label: 'Resume Vault',
       icon: FileCheck,
-      color: 'text-[#7CFFB2] border-[#7CFFB2]/20 bg-[#7CFFB2]/5',
-      glow: 'shadow-[#7CFFB2]/10',
+      color: 'text-emerald-700 border-emerald-500/20 bg-white/95',
+      glow: 'shadow-emerald-500/5',
       orbit: 'animate-[orbit-inner_25s_infinite_linear]',
       delay: '-0s',
     },
     {
       label: 'ATS Check: 95%',
       icon: ShieldCheck,
-      color: 'text-[#00D67A] border-[#00D67A]/20 bg-[#00D67A]/5',
-      glow: 'shadow-[#00D67A]/10',
+      color: 'text-emerald-600 border-emerald-500/20 bg-white/95',
+      glow: 'shadow-emerald-500/5',
       orbit: 'animate-[orbit-inner_25s_infinite_linear]',
       delay: '-12.5s',
     },
     {
       label: 'Skills Stack',
       icon: Code,
-      color: 'text-[#00D67A] border-[#00D67A]/20 bg-[#00D67A]/5',
-      glow: 'shadow-[#00D67A]/10',
+      color: 'text-emerald-600 border-emerald-500/20 bg-white/95',
+      glow: 'shadow-emerald-500/5',
       orbit: 'animate-[orbit-middle_35s_infinite_linear]',
       delay: '-5s',
     },
     {
       label: '43 Match Alerts',
       icon: Briefcase,
-      color: 'text-[#7CFFB2] border-[#7CFFB2]/20 bg-[#7CFFB2]/5',
-      glow: 'shadow-[#7CFFB2]/10',
+      color: 'text-emerald-700 border-emerald-500/20 bg-white/95',
+      glow: 'shadow-emerald-500/5',
       orbit: 'animate-[orbit-middle_35s_infinite_linear]',
       delay: '-22s',
     },
     {
       label: 'Interviews Ready',
       icon: Users,
-      color: 'text-[#FFD93D] border-[#FFD93D]/20 bg-[#FFD93D]/5',
-      glow: 'shadow-[#FFD93D]/10',
+      color: 'text-amber-700 border-amber-500/20 bg-white/95',
+      glow: 'shadow-amber-500/5',
       orbit: 'animate-[orbit-outer_45s_infinite_linear]',
       delay: '-15s',
     },
@@ -93,19 +93,19 @@ export default function CareerCommandCenter({
       `}} />
 
       {/* Orbit Rings Background */}
-      <div className="absolute w-[170px] h-[170px] md:w-[170px] md:h-[170px] border border-white/5 rounded-full pointer-events-none z-0"></div>
-      <div className="absolute w-[170px] h-[170px] md:w-[170px] md:h-[170px] border border-[#00D67A]/10 rounded-full blur-[2px] pointer-events-none z-0"></div>
+      <div className="absolute w-[170px] h-[170px] md:w-[170px] md:h-[170px] border border-slate-200/80 rounded-full pointer-events-none z-0"></div>
+      <div className="absolute w-[170px] h-[170px] md:w-[170px] md:h-[170px] border border-[#00D67A]/15 rounded-full blur-[2px] pointer-events-none z-0"></div>
       
-      <div className="absolute w-[120px] h-[120px] md:w-[170px] md:h-[170px] border border-white/5 rounded-full pointer-events-none z-0 scale-75 md:scale-100"></div>
-      <div className="absolute w-[200px] h-[200px] md:w-[290px] md:h-[290px] border border-white/5 rounded-full pointer-events-none z-0 scale-75 md:scale-100 border-dashed"></div>
-      <div className="absolute w-[280px] h-[280px] md:w-[410px] md:h-[410px] border border-white/5 rounded-full pointer-events-none z-0 scale-75 md:scale-100"></div>
+      <div className="absolute w-[120px] h-[120px] md:w-[170px] md:h-[170px] border border-slate-200/80 rounded-full pointer-events-none z-0 scale-75 md:scale-100"></div>
+      <div className="absolute w-[200px] h-[200px] md:w-[290px] md:h-[290px] border border-slate-200/80 rounded-full pointer-events-none z-0 scale-75 md:scale-100 border-dashed"></div>
+      <div className="absolute w-[280px] h-[280px] md:w-[410px] md:h-[410px] border border-slate-200/80 rounded-full pointer-events-none z-0 scale-75 md:scale-100"></div>
 
       {/* Sphere Halo Lights */}
-      <div className="absolute w-28 h-28 md:w-36 md:h-36 rounded-full bg-[#00D67A]/10 blur-xl animate-pulse pointer-events-none"></div>
-      <div className="absolute w-20 h-20 md:w-28 md:h-28 rounded-full bg-[#7CFFB2]/5 blur-lg animate-pulse pointer-events-none delay-1000"></div>
+      <div className="absolute w-28 h-28 md:w-36 md:h-36 rounded-full bg-[#00D67A]/8 blur-xl animate-pulse pointer-events-none"></div>
+      <div className="absolute w-20 h-20 md:w-28 md:h-28 rounded-full bg-[#7CFFB2]/4 blur-lg animate-pulse pointer-events-none delay-1000"></div>
 
       {/* Central Glass Sphere / Profile DNA */}
-      <div className="absolute w-24 h-24 md:w-32 md:h-32 rounded-full backdrop-blur-xl bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl z-20 overflow-visible group">
+      <div className="absolute w-24 h-24 md:w-32 md:h-32 rounded-full backdrop-blur-xl bg-white/80 border border-slate-200/80 flex items-center justify-center shadow-xl z-20 overflow-visible group">
         <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-[#00D67A]/30">
           <img 
             src={profileImage} 
@@ -132,7 +132,7 @@ export default function CareerCommandCenter({
               animationDelay: node.delay,
             }}
           >
-            <div className={`flex items-center gap-1.5 md:gap-2 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full border backdrop-blur-md text-[9px] md:text-[11px] font-bold tracking-wide transition-all duration-300 hover:scale-110 shadow-lg ${node.color} ${node.glow} hover:bg-white/15 hover:border-white/20`}>
+            <div className={`flex items-center gap-1.5 md:gap-2 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full border backdrop-blur-md text-[9px] md:text-[11px] font-bold tracking-wide transition-all duration-300 hover:scale-110 shadow-lg ${node.color} ${node.glow} hover:bg-slate-50 hover:border-slate-350 hover:text-slate-900`}>
               <Icon className="w-3.5 h-3.5 shrink-0" />
               <span>{node.label}</span>
             </div>
