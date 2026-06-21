@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
@@ -15,6 +15,18 @@ export default function AuthPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+
+  useEffect(() => {
+    // Remove dark class when login page is mounted so that it is always light theme (white theme)
+    const isDarkBefore = document.documentElement.classList.contains('dark');
+    document.documentElement.classList.remove('dark');
+    return () => {
+      // Re-add dark class if it was there before, so other pages aren't affected
+      if (isDarkBefore) {
+        document.documentElement.classList.add('dark');
+      }
+    };
+  }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,22 +112,21 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F8FAF8] flex items-center justify-center p-4">
       {/* Background glow highlights */}
       <div className="absolute top-1/4 left-1/3 w-72 h-72 bg-accent-primary/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-accent-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="w-full max-w-md glass-panel p-8 rounded-[32px] border border-border dark:border-white/10 shadow-2xl relative overflow-hidden z-10">
+      <div className="w-full max-w-md glass-panel p-8 rounded-[32px] border border-border shadow-2xl relative overflow-hidden z-10">
         
-        {/* Logo and Tagline */}
+        {/* Logo and Tagline (Light theme logo exclusively for login page) */}
         <div className="text-center mb-8">
-          <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-32 w-auto mx-auto mb-3 block dark:hidden" />
-          <img src="/logo-dark.png" alt="JobPilot AI Logo" className="h-32 w-auto mx-auto mb-3 hidden dark:block" />
+          <img src="/logo-light.png" alt="JobPilot AI Logo" className="h-32 w-auto mx-auto mb-3 block" />
           <p className="text-text-secondary text-xs mt-1 font-semibold">Accelerate your career in tech</p>
         </div>
  
         {/* Tab Toggle */}
-        <div className="flex border-b border-border dark:border-white/5 mb-6 text-xs font-bold uppercase tracking-wider">
+        <div className="flex border-b border-border mb-6 text-xs font-bold uppercase tracking-wider">
           <button
             type="button"
             className={`flex-1 pb-3 text-xs font-bold transition-colors duration-150 border-b-2 ${
@@ -169,7 +180,7 @@ export default function AuthPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Rahul Sharma"
-                className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
+                className="w-full px-3 py-2 bg-bg-elevated/50 border border-border rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight font-semibold"
               />
             </div>
           )}
@@ -184,7 +195,7 @@ export default function AuthPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
+              className="w-full px-3 py-2 bg-bg-elevated/50 border border-border rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight font-semibold"
             />
           </div>
  
@@ -198,7 +209,7 @@ export default function AuthPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 py-2 bg-bg-elevated/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight dark:focus:border-white/20 font-semibold"
+              className="w-full px-3 py-2 bg-bg-elevated/50 border border-border rounded-xl text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-highlight font-semibold"
             />
           </div>
  
@@ -214,10 +225,10 @@ export default function AuthPage() {
         {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border dark:border-white/5"></span>
+            <span className="w-full border-t border-border"></span>
           </div>
           <div className="relative flex justify-center text-[10px] uppercase font-mono">
-            <span className="bg-bg-surface dark:bg-[#121A15] px-3 text-text-tertiary">Or continue with</span>
+            <span className="bg-bg-surface px-3 text-text-tertiary">Or continue with</span>
           </div>
         </div>
  
@@ -225,7 +236,7 @@ export default function AuthPage() {
         <button
           type="button"
           onClick={handleGoogleSignIn}
-          className="w-full h-10 bg-bg-elevated/40 dark:bg-white/5 border border-border dark:border-white/5 hover:border-border-highlight dark:hover:border-white/12 text-text-primary rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 btn-magnetic"
+          className="w-full h-10 bg-bg-elevated/40 border border-border hover:border-border-highlight text-text-primary rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 btn-magnetic"
         >
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path

@@ -28,7 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   const [userName, setUserName] = useState('Developer');
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
     async function getProfile() {
