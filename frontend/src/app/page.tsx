@@ -148,7 +148,7 @@ export default function LandingPage() {
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative w-36 h-36 rounded-full overflow-hidden ring-4 ring-accent-primary/25 group-hover:ring-accent-primary/40 transition-all duration-300">
                   <img 
-                    src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=256&h=256&q=80" 
+                    src="/profile.png" 
                     alt="Yoosuf Ali Saleel" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
